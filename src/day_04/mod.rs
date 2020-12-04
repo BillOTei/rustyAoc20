@@ -102,6 +102,28 @@ fn is_valid_hcl(l: &str) -> bool {
     }
 }
 
+fn is_valid_ecl(l: &str) -> bool {
+    let re_ecl = Regex::new(r"ecl:(?P<ecl>amb|blu|brn|gry|grn|hzl|oth)").expect("Invalid regex ecl");
+
+    match re_ecl
+        .captures(l)
+        .and_then(|c| c.name("ecl")) {
+        Some(_) => true,
+        _ => false
+    }
+}
+
+fn is_valid_pid(l: &str) -> bool {
+    match Regex::new(r"pid:(\W?\w+)").unwrap()
+        .captures(l) {
+        Some(_pid) => {
+            let v = _pid.get(1).unwrap().as_str();
+            v.len() == 9 && Regex::new(r"[^0-9]").unwrap().captures(v).is_none()
+        }
+        None => false
+    }
+}
+
 pub fn solve_step_2() -> usize {
     let re = Regex::new(r"\n\n").expect("Invalid regex");
     let set = RegexSet::new(HEADERS).expect("Invalid regex set");
@@ -109,18 +131,14 @@ pub fn solve_step_2() -> usize {
     re
         .split(INPUT)
         .filter(|l| {
-            let check_byr = is_valid_byr(&l);
-            let check_iyr = is_valid_iyr(&l);
-            let check_eyr = is_valid_eyr(&l);
-            let check_hgt = is_valid_hgt(&l);
-            let check_hcl = is_valid_hcl(&l);
-
-            println!("{} {} {} {} {}", check_byr, check_iyr, check_eyr, check_hgt, check_hcl);
-
-
             let check: Vec<usize> = set.matches(l).into_iter().collect();
 
-            &check.len() == HEADERS_LEN
+            if &check.len() == HEADERS_LEN {
+                is_valid_byr(&l) && is_valid_iyr(&l) && is_valid_eyr(&l) && is_valid_hgt(&l) && is_valid_hcl(&l) &&
+                    is_valid_ecl(&l) && is_valid_pid(&l)
+            } else {
+                false
+            }
         })
         .count()
 }
