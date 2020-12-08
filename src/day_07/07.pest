@@ -1,0 +1,11 @@
+WHITESPACE = _{ " " }
+bag_char = _{ !("bag") ~ ASCII_ALPHA }
+bag_name = { bag_char+ }
+bag_empty = { "no other bags" }
+bags_list = {
+    ","? ~ (number ~ bag_name) ~ "bag" ~ "s"?
+}
+number = @{ ASCII_DIGIT+ }
+bag_def = { bag_name ~ "bags contain" ~ (bags_list+ | bag_empty) ~ "." }
+
+input = { SOI ~ (bag_def ~ NEWLINE?)* ~ EOI }
